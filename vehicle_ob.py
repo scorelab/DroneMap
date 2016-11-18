@@ -227,7 +227,8 @@ class Vehicle(object):
 	def shutdown_simulator(self):
 		if sitl is not None:
 	    	sitl.stop()
-
+		
+	#completion
 	print("Completed")
 
 
