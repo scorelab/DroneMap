@@ -22,9 +22,9 @@ class Vehicle(object):
 
 		#Start SITL if no connection string specified
 		if not connection_string:
-    		import dronekit_sitl
-    		sitl = dronekit_sitl.start_default()
-    		connection_string = sitl.connection_string()
+    			import dronekit_sitl
+    			sitl = dronekit_sitl.start_default()
+    			connection_string = sitl.connection_string()
 
 
 	def connect_vehicle(self):
@@ -47,8 +47,8 @@ class Vehicle(object):
     		if not self.vehicle.home_location:
         		print " Waiting for home location ..."
 
-        # We have a home location, so print it! 
-        print "\n Home location: %s" % self.vehicle.home_location		
+        	# We have a home location, so print it! 
+        	print "\n Home location: %s" % self.vehicle.home_location		
 		
 
 	def set_Vehicle_Home_Location(self):
@@ -70,8 +70,8 @@ class Vehicle(object):
 		print "\nSet Vehicle.mode = GUIDED (currently: %s)" % self.vehicle.mode.name 
 		selfvehicle.mode = VehicleMode("GUIDED")
 		while not self.vehicle.mode.name=='GUIDED':  #Wait until mode has changed
-    	print " Waiting for mode change ..."
-    	time.sleep(1)
+    			print " Waiting for mode change ..."
+    			time.sleep(1)
 
 
     	def check_Armability(self):
@@ -79,14 +79,14 @@ class Vehicle(object):
     		while not self.vehicle.is_armable:
     			print " Waiting for vehicle to initialise..."
     			time.sleep(1)
-    	# If required, you can provide additional information about initialisation
-    	# using `vehicle.gps_0.fix_type` and `vehicle.mode.name`.
+    		# If required, you can provide additional information about initialisation
+    		# using `vehicle.gps_0.fix_type` and `vehicle.mode.name`.
     
 			print "\nSet Vehicle.armed=True (currently: %s)" % self.vehicle.armed 
 			self.vehicle.armed = True
 			while not self.vehicle.armed:
-    			print " Waiting for arming..."
-    			time.sleep(1)
+    				print " Waiting for arming..."
+    				time.sleep(1)
 			print " Vehicle is armed: %s" % self.vehicle.armed 
 
 
@@ -97,11 +97,11 @@ class Vehicle(object):
 			last_attitude_cache = None
 
 	def attitude_callback(self, attr_name, value):
-    	# `attr_name` - the observed attribute (used if callback is used for multiple attributes)
-    	# `self` - the associated vehicle object (used if a callback is different for multiple vehicles)
-    	# `value` is the updated attribute value.
+    		# `attr_name` - the observed attribute (used if callback is used for multiple attributes)
+    		# `self` - the associated vehicle object (used if a callback is different for multiple vehicles)
+    		# `value` is the updated attribute value.
     		global last_attitude_cache
-    	# Only publish when value changes
+    		# Only publish when value changes
     		if value!=last_attitude_cache:
         		print " CALLBACK: Attitude changed to", value
         		last_attitude_cache=value
@@ -118,14 +118,14 @@ class Vehicle(object):
 	self.vehicle.remove_attribute_listener('attitude', attitude_callback)
 
 
-	# Add mode attribute callback using decorator (callbacks added this way cannot be removed).
+		# Add mode attribute callback using decorator (callbacks added this way cannot be removed).
 	print "\nAdd `mode` attribute callback/observer using decorator" 
 	@vehicle.on_attribute('mode')   
 
 	def decorated_mode_callback(self, attr_name, value):
-    # `attr_name` is the observed attribute (used if callback is used for multiple attributes)
-    # `attr_name` - the observed attribute (used if callback is used for multiple attributes)
-    # `value` is the updated attribute value.
+    		# `attr_name` is the observed attribute (used if callback is used for multiple attributes)
+    		# `attr_name` - the observed attribute (used if callback is used for multiple attributes)
+    		# `value` is the updated attribute value.
     		print " CALLBACK: Mode changed to", value
 
 	print " Set mode=STABILIZE (currently: %s) and wait for callback" % self.vehicle.mode.name 
@@ -136,13 +136,13 @@ class Vehicle(object):
 
 	print "\n Attempt to remove observer added with `on_attribute` decorator (should fail)" 
 	try:
-    	self.vehicle.remove_attribute_listener('mode', decorated_mode_callback)
+    		self.vehicle.remove_attribute_listener('mode', decorated_mode_callback)
 	except:
-    	print " Exception: Cannot remove observer added using decorator"
+    		print " Exception: Cannot remove observer added using decorator"
 
 
 
-	# Demonstrate getting callback on any attribute change
+		# Demonstrate getting callback on any attribute change
 	def wildcard_callback(self, attr_name, value):
     		print " CALLBACK: (%s): %s" % (attr_name,value)
 
@@ -154,12 +154,12 @@ class Vehicle(object):
 	time.sleep(1)
 
 	print " Remove Vehicle attribute observer"    
-	# Remove observer added with `add_attribute_listener()`
+		# Remove observer added with `add_attribute_listener()`
 	self.vehicle.remove_attribute_listener('*', wildcard_callback)
     
 
 
-	# Get/Set Vehicle Parameters
+		# Get/Set Vehicle Parameters
 	def set_parameters(self):
 		print "\nRead and write parameters"
 		print " Read vehicle param 'THR_MIN': %s" % self.vehicle.parameters['THR_MIN']
@@ -171,13 +171,13 @@ class Vehicle(object):
 
 		print "\nPrint all parameters (iterate `vehicle.parameters`):"
 		for key, value in self.vehicle.parameters.iteritems():
-	    	print " Key:%s Value:%s" % (key,value)
+	    		print " Key:%s Value:%s" % (key,value)
 	    
 
 		print "\nCreate parameter observer using decorator"
-	# Parameter string is case-insensitive
-	# Value is cached (listeners are only updated on change)
-	# Observer added using decorator can't be removed.
+		# Parameter string is case-insensitive
+		# Value is cached (listeners are only updated on change)
+		# Observer added using decorator can't be removed.
 	 
 		@vehicle.parameters.on_attribute('THR_MIN')
 
