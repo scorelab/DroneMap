@@ -74,37 +74,37 @@ class Vehicle(object):
     	time.sleep(1)
 
 
-    def check_Armability(self):
+    	def check_Armability(self):
 
-    	while not self.vehicle.is_armable:
-    		print " Waiting for vehicle to initialise..."
-    		time.sleep(1)
-    # If required, you can provide additional information about initialisation
-    # using `vehicle.gps_0.fix_type` and `vehicle.mode.name`.
+    		while not self.vehicle.is_armable:
+    			print " Waiting for vehicle to initialise..."
+    			time.sleep(1)
+    	# If required, you can provide additional information about initialisation
+    	# using `vehicle.gps_0.fix_type` and `vehicle.mode.name`.
     
-		print "\nSet Vehicle.armed=True (currently: %s)" % self.vehicle.armed 
-		self.vehicle.armed = True
-		while not self.vehicle.armed:
-    		print " Waiting for arming..."
-    		time.sleep(1)
-		print " Vehicle is armed: %s" % self.vehicle.armed 
+			print "\nSet Vehicle.armed=True (currently: %s)" % self.vehicle.armed 
+			self.vehicle.armed = True
+			while not self.vehicle.armed:
+    			print " Waiting for arming..."
+    			time.sleep(1)
+			print " Vehicle is armed: %s" % self.vehicle.armed 
 
 
 		# Add and remove and attribute callbacks
 
 		#Define callback for `vehicle.attitude` observer
 
-		last_attitude_cache = None
+			last_attitude_cache = None
 
 	def attitude_callback(self, attr_name, value):
     	# `attr_name` - the observed attribute (used if callback is used for multiple attributes)
     	# `self` - the associated vehicle object (used if a callback is different for multiple vehicles)
     	# `value` is the updated attribute value.
-    	global last_attitude_cache
+    		global last_attitude_cache
     	# Only publish when value changes
-    	if value!=last_attitude_cache:
-        	print " CALLBACK: Attitude changed to", value
-        	last_attitude_cache=value
+    		if value!=last_attitude_cache:
+        		print " CALLBACK: Attitude changed to", value
+        		last_attitude_cache=value
 
 	print "\nAdd `attitude` attribute callback/observer on `vehicle`"     
 	self.vehicle.add_attribute_listener('attitude', attitude_callback)
@@ -126,7 +126,7 @@ class Vehicle(object):
     # `attr_name` is the observed attribute (used if callback is used for multiple attributes)
     # `attr_name` - the observed attribute (used if callback is used for multiple attributes)
     # `value` is the updated attribute value.
-    	print " CALLBACK: Mode changed to", value
+    		print " CALLBACK: Mode changed to", value
 
 	print " Set mode=STABILIZE (currently: %s) and wait for callback" % self.vehicle.mode.name 
 	self.vehicle.mode = VehicleMode("STABILIZE")
@@ -144,7 +144,7 @@ class Vehicle(object):
 
 	# Demonstrate getting callback on any attribute change
 	def wildcard_callback(self, attr_name, value):
-    	print " CALLBACK: (%s): %s" % (attr_name,value)
+    		print " CALLBACK: (%s): %s" % (attr_name,value)
 
 	print "\nAdd attribute callback detecting ANY attribute change"     
 	self.vehicle.add_attribute_listener('*', wildcard_callback)
@@ -154,12 +154,12 @@ class Vehicle(object):
 	time.sleep(1)
 
 	print " Remove Vehicle attribute observer"    
-# Remove observer added with `add_attribute_listener()`
+	# Remove observer added with `add_attribute_listener()`
 	self.vehicle.remove_attribute_listener('*', wildcard_callback)
     
 
 
-# Get/Set Vehicle Parameters
+	# Get/Set Vehicle Parameters
 	def set_parameters(self):
 		print "\nRead and write parameters"
 		print " Read vehicle param 'THR_MIN': %s" % self.vehicle.parameters['THR_MIN']
@@ -183,7 +183,7 @@ class Vehicle(object):
 
 
 	def decorated_thr_min_callback(self, attr_name, value):
-	    print " PARAMETER CALLBACK: %s changed to: %s" % (attr_name, value)
+	    	print " PARAMETER CALLBACK: %s changed to: %s" % (attr_name, value)
 
 
 	print "Write vehicle param 'THR_MIN' : 20 (and wait for callback)"
@@ -192,7 +192,7 @@ class Vehicle(object):
 	    #Callbacks may not be updated for a few seconds
 	    if self.vehicle.parameters['THR_MIN']==20:
 	        break
-	    time.sleep(1)
+	    	time.sleep(1)
 
 
 	#Callback function for "any" parameter
@@ -200,7 +200,7 @@ class Vehicle(object):
 
 
 	def any_parameter_callback(self, attr_name, value):
-	    print " ANY PARAMETER CALLBACK: %s changed to: %s" % (attr_name, value)
+	    	print " ANY PARAMETER CALLBACK: %s changed to: %s" % (attr_name, value)
 
 	#Add observer for the vehicle's any/all parameters parameter (defined using wildcard string ``'*'``)
 	self.vehicle.parameters.add_attribute_listener('*', any_parameter_callback)     
