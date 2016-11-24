@@ -2,7 +2,7 @@ import ConfigParser as cp
 import json
 
 config = cp.RawConfigParser()
-config.read('/config/config.cfg')
+config.read('./config/config.cfg')
 
 drone_id = json.loads(config.get("drone","d_id"))
 simulation = config.getboolean("drone", "simulation")
