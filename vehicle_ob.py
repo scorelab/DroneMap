@@ -1,3 +1,5 @@
+#Created by Imal thiunuwan using Intellij Idea
+
 from dronekit import connect, VehicleMode
 import time
 import argparse
@@ -7,15 +9,17 @@ import argparse
 
 class Vehicle():
 
-    def __init__(self,version,gimbal):
+    def __init__(self,version):
         self.version = version
-        self.gimbal = gimbal
 
-    def main(self):
+    def connect_vehicle(self):
+
+        # Connect to the Vehicle.
+        # Set `wait_ready=True` to ensure default attributes are populated before `connect()` returns.
 
         parser = argparse.ArgumentParser(description='Print out vehicle state information. Connects to SITL on local PC by default.')
         parser.add_argument('--connect',
-                   help="vehicle connection target string. If not specified, SITL automatically started and used.")
+                    help="vehicle connection target string. If not specified, SITL automatically started and used.")
         args = parser.parse_args()
 
         connection_string = args.connect
@@ -23,19 +27,13 @@ class Vehicle():
 
         #Start SITL if no connection string specified
         if not connection_string:
-                import dronekit_sitl
-                sitl = dronekit_sitl.start_default()
-                connection_string = sitl.connection_string()
+            import dronekit_sitl
+            sitl = dronekit_sitl.start_default()
+            connection_string = sitl.connection_string()
 
-
-    def connect_vehicle(self, connection_string=None):
-        # Connect to the Vehicle.
-        # Set `wait_ready=True` to ensure default attributes are populated before `connect()` returns.
-
-        print ("\nConnecting to vehicle on: %s" % connection_string)
-        self.vehicle = connect(connection_string, wait_ready=True)
-
-        self.vehicle.wait_ready('autopilot_version')
+            print ("\nConnecting to vehicle on: %s" % connection_string)
+            self.vehicle = connect(connection_string, wait_ready=True)
+            self.vehicle.wait_ready('autopilot_version')
 
 
     # Get Vehicle Home location - will be `None` until first set by autopilot
@@ -98,6 +96,7 @@ class Vehicle():
         last_attitude_cache = None
 
         # Get/Set Vehicle Parameters
+
     def set_parameters(self):
         print ("\nRead and write parameters")
         print (" Read vehicle param 'THR_MIN': %s" % self.vehicle.parameters['THR_MIN'])
@@ -117,7 +116,7 @@ class Vehicle():
         # Value is cached (listeners are only updated on change)
         # Observer added using decorator can't be removed.
 
-        @vehicle.parameters.on_attribute('THR_MIN')
+        @self.vehicle.parameters.on_attribute('THR_MIN')
 
     # Reset variables to sensible values
         def reset_vehicle_attributes(self):
@@ -129,18 +128,31 @@ class Vehicle():
 
 
     #Close vehicle object before exiting script
-        def close_vehicle(self):
-            print ("\nClose vehicle object")
-            self.vehicle.close()
+    def close_vehicle(self):
+        print ("\nClose vehicle object")
+        self.vehicle.close()
 
     # Shut down simulator if it was started.
+
     def shutdown_simulator(self):
         if sitl is not None:
             sitl.stop()
 
-    #completion
-    print("Completed")
 
+def main():
+    #print ("Connection established")
+    vehicle = Vehicle(1.00)
+    vehicle.connect_vehicle()
+    vehicle.get_Vehicle_Home_Location()
+    vehicle.check_Armability()
+    vehicle.set_parameters()
+    vehicle.close_vehicle()
 
+if __name__ == "__main__":
+    main()
 
+else:
+    print ("Connection error")
 
+#completion
+print("Completed")
