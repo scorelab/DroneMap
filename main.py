@@ -1,6 +1,9 @@
 import ConfigParser as cp
 import json
+import time
 from dronekit import connect, VehicleMode
+import sys
+import pymongo
 
 
 def config_loader():
@@ -40,7 +43,7 @@ def print_vehicle_state(vehicle, configs):
     print "   Release version: %s" % vehicle.version.release_version()
     print "   Stable release?: %s" % vehicle.version.is_stable()
     print " Autopilot capabilities"
-    print "   Supports MISSION_FLOAT message type: %s" % vehicle.capabilities.mission_float
+    # print "   Supports MISSION_FLOAT message type: %s" % vehicle.capabilities.mission_float
     print "   Supports PARAM_FLOAT message type: %s" % vehicle.capabilities.param_float
     print "   Supports MISSION_INT message type: %s" % vehicle.capabilities.mission_int
     print "   Supports COMMAND_INT message type: %s" % vehicle.capabilities.command_int
@@ -75,52 +78,96 @@ def print_vehicle_state(vehicle, configs):
     print " Mode: %s" % vehicle.mode.name  # settable
     print " Armed: %s" % vehicle.armed  # settable
 
-def vehicle_state_json_builder(vehicle):
-    data = {}
-    data['vehicleId'] = config.get('drone', 'drone_id')
-    data['vehicle_version'] = vehicle.version
-    data['vehicle_version_major'] = vehicle.version.major
-    data['vehicle_version_minor'] = vehicle.version.minor
-    data['vehicle_version_patch'] = vehicle.version.patch
-    data['vehicle_version_release_type'] = vehicle.version.release_type()
-    data['vehicle_version_release_version'] = vehicle.version.release_version()
-    data['vehicle_version_release_is_stable'] = vehicle.version.is_stable()
-    data['vehicle_capabilities_mission_float'] = vehicle.capabilities.mission_float
-    data['vehicle_capabilities_param_float'] = vehicle.capabilities.param_float
-    data['vehicle_capabilities_mission_int'] = vehicle.capabilities.mission_int
-    data['vehicle_capabilities_command_int'] = vehicle.capabilities.command_int
-    data['vehicle_capabilities_param_union'] = vehicle.capabilities.param_union
-    data['vehicle_capabilities_ftp'] = vehicle.capabilities.ftp
-    data['vehicle_capabilities_set_attitude_target'] = vehicle.capabilities.set_attitude_target
-    data['vehicle_capabilities_set_attitude_target_local_ned'] = vehicle.capabilities.set_attitude_target
-    data['vehicle_capabilities_set_attitude_target_global_int'] = vehicle.capabilities.set_altitude_target_global_int
-    data['vehicle_capabilities_terrain'] = vehicle.capabilities.terrain
-    data['vehicle_capabilities_set_actuator_target'] = vehicle.capabilities.set_actuator_target
-    data['vehicle_capabilities_flight_termination'] = vehicle.capabilities.flight_termination
-    data['vehicle_capabilities_mission_float'] = vehicle.capabilities.mission_float
-    data['vehicle_capabilities_compass_calibration'] = vehicle.capabilities.compass_calibration
-    data['vehicle_global_location'] = vehicle.location.global_frame
-    data['vehicle_global_location_relative_altitude'] = vehicle.location.global_relative_frame
-    data['vehicle_local_location'] = vehicle.location.local_frame
-    data['vehicle_attitude'] = vehicle.attitude
-    data['vehicle_velocity'] = vehicle.velocity
-    data['vehicle_gps'] = vehicle.gps_0
-    data['vehicle_gimbal_status'] = vehicle.gimbal
-    data['vehicle_battery'] = vehicle.battery
-    data['vehicle_ekf_ok'] = vehicle.ekf_ok
-    data['vehicle_last_heartbeat'] = vehicle.last_heartbeat
-    data['vehicle_rangefinder'] = vehicle.rangefinder
-    data['vehicle_rangefinder_distance'] = vehicle.rangefinder.distance
-    data['vehicle_rangefinder_voltage'] = vehicle.rangefinder.voltage
-    data['vehicle_heading'] = vehicle.heading
-    data['vehicle_is_armable'] = vehicle.is_armable
-    data['vehicle_system_status_state'] = vehicle.system_status.state
-    data['vehicle_groundspeed'] = vehicle.groundspeed
-    data['vehicle_airspeed'] = vehicle.airspeed
-    data['vehicle_mode'] = vehicle.mode.name
-    data['vehicle_armed'] = vehicle.armed
 
-    return json.dumps(data)
+def vehicle_state_json_builder(vehicle, configs):
+    data = {
+        'drone_id': configs.get('drone', 'drone_id'),
+        'timestamp': vehicle._master.timestamp,
+        'air_speed': vehicle.airspeed,
+        'is_armable': vehicle.is_armable,
+        'autopilot_type': vehicle._autopilot_type,
+        'flightmode': vehicle._flightmode,
+        'groundspeed': vehicle._groundspeed,
+        'heading': vehicle.heading,
+        'home_location': vehicle._home_location,
+        'last_heartbeat': vehicle._last_heartbeat,
+        'location': {
+            'alt': vehicle._location._alt,
+            'down': vehicle._location._down,
+            'east': vehicle._location._east,
+            'north': vehicle._location._north,
+            'relative_alt': vehicle._location._relative_alt,
+            'lat': vehicle._location._lat,
+            'log': vehicle._location._lon
+        },
+        'location_global': {
+            'alt': vehicle._location.global_frame.alt,
+            'lat': vehicle._location.global_frame.lat,
+            'log': vehicle._location.global_frame.lon
+        },
+        'location_global_relative': {
+            'alt': vehicle._location.global_relative_frame.alt,
+            'lat': vehicle._location.global_relative_frame.lat,
+            'log': vehicle._location.global_relative_frame.lon
+        },
+        'location_local': {
+            'down': vehicle._location.local_frame.down,
+            'east': vehicle._location.local_frame.east,
+            'north': vehicle._location.local_frame.north
+        },
+        'attitude': {
+            'pitch': vehicle._pitch,
+            'pitch_speed': vehicle._pitchspeed,
+            'roll': vehicle._roll,
+            'roll_speed': vehicle._rollspeed,
+            'yaw': vehicle._yaw,
+            'yaw_speed': vehicle._yawspeed
+        },
+        'battery': {
+            'battery_current': vehicle.battery.current,
+            'battery_level': vehicle.battery.level,
+            'battery_voltage': vehicle.battery.voltage
+        },
+        'gps': {
+            'eph': vehicle.gps_0.eph,
+            'epv': vehicle.gps_0.epv,
+            'fix_type': vehicle.gps_0.fix_type,
+            'satellites_visible': vehicle.gps_0.satellites_visible
+        },
+        'groundspeed': vehicle._groundspeed,
+        'last_heartbeat': vehicle.last_heartbeat,
+        'velocity': vehicle.velocity,
+    }
+
+    print data
+    return data
+
+
+def connect_to_db(uri):
+    client = pymongo.MongoClient(uri)
+    db = client.get_default_database()
+    return db
+
+
+def insert(db, documentName, dataArray):
+    document = db[documentName]
+    val = document.insert(dataArray)
+    if (val):
+        print("Successed!")
+    else:
+        print("Something went wrong.")
+
+
+def read(db):
+    try:
+        # data_column = db.dronemap_collections.find()
+        data_column = db.dronemap_collections.find({}).sort([
+            ("timestamp", pymongo.DESCENDING)
+        ]).limit(1)
+        for d in data_column:
+            return d
+    except Exception, e:
+        print str(e)
 
 
 if __name__ == "__main__":
@@ -128,15 +175,31 @@ if __name__ == "__main__":
     configs = config_loader()
 
     # Connect to vehicle
-    vehicle = connect_vehicle(configs)
+    # vehicle = connect_vehicle(configs)
 
     # Print vehicle status
-    count = 0
-    while (count < 9):
-        print_vehicle_state(vehicle, configs)
-        json_data = vehicle_state_json_builder(vehicle, configs)
-        import time
-        time.sleep(5)
+    # count = 0
+    # while(count < 2):
+    #
+    #     # print_vehicle_state(vehicle, configs)
+    #
+    #     # Build the vehicle state json
+    #     json_data = vehicle_state_json_builder(vehicle, configs)
+    #
+    #     # Connect to remote DB
+    #     db = connect_to_db(configs.get('db', 'db_connection'))
+    #
+    #     #Insert data to remote DB
+    #     insert(db, 'dronemap_collections', json_data)
+    #
+    #     # count = count +1
+    #
+    #     time.sleep(float(configs.get('drone', 'data_collection_frequency')))
+
+    # Read data from remote DB
+    db = connect_to_db(configs.get('db', 'db_connection'))
+    data = read(db)
+    print(data)
 
     # Close the connection
-    vehicle.close()
+    # vehicle.close()
