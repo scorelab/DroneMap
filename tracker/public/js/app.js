@@ -6,10 +6,10 @@ angular.module('TrackerApp', [])
 	o.getCurrLocation = function(){
 		var deferred = $q.defer();
 
-		$http.get(apiUrl + '/tracker/location/data').then((response) => {
+		$http.get(apiUrl + '/tracker/location/data').then(function(response){
 			console.log(response.data[0]);
 			deferred.resolve({ status: 'SUCCESS', location: response.data[0]});
-		}, (err) => {
+		}, function(err){
 			console.log(err);
 			deferred.reject({ status: 'ERROR', error: err });
 		});
@@ -54,8 +54,8 @@ angular.module('TrackerApp', [])
 		initializeMap(geoCenter);
 	}
 
-	$interval(() => {
-		LocationService.getCurrLocation().then((result) => {
+	$interval(function(){
+		LocationService.getCurrLocation().then(function(result){
 			var lastLoc = $scope.locations[$scope.locations.length - 1];
 			console.log(lastLoc);
 			if($scope.locations.length == 0 || result.location.timestamp > lastLoc.timestamp){
