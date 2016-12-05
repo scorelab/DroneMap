@@ -23,6 +23,7 @@ body {
   box-sizing: border-box;
   min-height: 100%;
 }
+#mapx {height: 80%;width: 80%;}
 
 body.open {
   overflow: hidden;
