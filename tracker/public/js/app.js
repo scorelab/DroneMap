@@ -45,10 +45,17 @@ angular.module('TrackerApp', [])
 
 		$scope.locations = [];
 
-		var marker = new google.maps.Marker({
+		var currLoc = new google.maps.Marker({
     		position: center,
     		map: $scope.map,
     		title: 'GZ'
+  		});
+
+  		$scope.droneLoc = new google.maps.Marker({
+    		position: center,
+    		map: $scope.map,
+    		title: 'DR',
+    		icon: 'http://localhost:3000/img/icon_map.png'
   		});
 	}
 
@@ -74,6 +81,7 @@ angular.module('TrackerApp', [])
 				$scope.locations.push(result.location);
 				$scope.trackerPath.push(new google.maps.LatLng(result.location.lat, result.location.log));
 				$scope.path.setPath($scope.trackerPath);
+				$scope.droneLoc.setPosition(new google.maps.LatLng(result.location.lat, result.location.log));
 			}
 		});
 	}, 2000);
