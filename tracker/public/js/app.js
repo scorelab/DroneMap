@@ -8,7 +8,7 @@ angular.module('TrackerApp', [])
 
 		$http.get(apiUrl + '/tracker/location/data').then(function(response){
 			console.log(response.data[0]);
-			deferred.resolve({ status: 'SUCCESS', location: response.data[0]});
+			deferred.resolve({ status: 'SUCCESS', location: response.data[0].location});
 		}, function(err){
 			console.log(err);
 			deferred.reject({ status: 'ERROR', error: err });
@@ -31,6 +31,18 @@ angular.module('TrackerApp', [])
 		}
 
 		$scope.map = new google.maps.Map($("#googleMap")[0], mapProp);
+		$scope.trackerPath = new Array();
+
+		$scope.path = new google.maps.Polyline({
+			path: $scope.trackerPath,
+			geodesic: true,
+          	strokeColor: '#FF0000',
+          	strokeOpacity: 1.0,
+          	strokeWeight: 2
+		});
+
+		$scope.path.setMap($scope.map);
+
 		$scope.locations = [];
 
 		var marker = new google.maps.Marker({
@@ -57,10 +69,11 @@ angular.module('TrackerApp', [])
 	$interval(function(){
 		LocationService.getCurrLocation().then(function(result){
 			var lastLoc = $scope.locations[$scope.locations.length - 1];
-			console.log(lastLoc);
 			if($scope.locations.length == 0 || result.location.timestamp > lastLoc.timestamp){
+				console.log(result);
 				$scope.locations.push(result.location);
-				console.log($scope.locations);
+				$scope.trackerPath.push(new google.maps.LatLng(result.location.lat, result.location.log));
+				$scope.path.setPath($scope.trackerPath);
 			}
 		});
 	}, 2000);
