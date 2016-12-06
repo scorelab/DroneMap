@@ -7,7 +7,8 @@ angular.module('TrackerApp', [])
 		var deferred = $q.defer();
 
 		$http.get(apiUrl + '/tracker/location/data').then(function(response){
-			console.log(response.data[0]);
+			//console.log(response.data[0]);
+			response.data[0].location.timestamp = response.data[0].timestamp;
 			deferred.resolve({ status: 'SUCCESS', location: response.data[0].location});
 		}, function(err){
 			console.log(err);
@@ -45,11 +46,11 @@ angular.module('TrackerApp', [])
 
 		$scope.locations = [];
 
-		var currLoc = new google.maps.Marker({
-    		position: center,
-    		map: $scope.map,
-    		title: 'GZ'
-  		});
+		// var currLoc = new google.maps.Marker({
+  //   		position: center,
+  //   		map: $scope.map,
+  //   		title: 'GZ'
+  // 		});
 
   		$scope.droneLoc = new google.maps.Marker({
     		position: center,
@@ -76,12 +77,16 @@ angular.module('TrackerApp', [])
 	$interval(function(){
 		LocationService.getCurrLocation().then(function(result){
 			var lastLoc = $scope.locations[$scope.locations.length - 1];
+			console.log(result.location.timestamp);
 			if($scope.locations.length == 0 || result.location.timestamp > lastLoc.timestamp){
 				console.log(result);
 				$scope.locations.push(result.location);
 				$scope.trackerPath.push(new google.maps.LatLng(result.location.lat, result.location.log));
 				$scope.path.setPath($scope.trackerPath);
 				$scope.droneLoc.setPosition(new google.maps.LatLng(result.location.lat, result.location.log));
+				$scope.map.panTo($scope.droneLoc.getPosition());
+				$scope.map.setZoom(15);
+				console.log($scope.path)
 			}
 		});
 	}, 2000);
